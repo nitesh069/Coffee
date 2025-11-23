@@ -1,0 +1,535 @@
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Break & BreakFast — Luxury Coffee Experience</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              coffee: '#5a311f',
+              amber: '#D4A373',
+              gold: '#B8860B',
+              crema: '#f7efe6',
+              deep: '#1b1411'
+            },
+            keyframes: {
+              float: { '0%':{transform:'translateY(0)'}, '50%':{transform:'translateY(-18px)'}, '100%':{transform:'translateY(0)'} },
+              swing: { '0%':{transform:'rotate(-6deg)'}, '50%':{transform:'rotate(6deg)'}, '100%':{transform:'rotate(-6deg)'} },
+              fadeUp: { '0%':{opacity:'0', transform:'translateY(18px)'}, '100%':{opacity:'1', transform:'translateY(0)'} },
+              pulseScale: { '0%':{transform:'scale(1)'}, '50%':{transform:'scale(1.04)'}, '100%':{transform:'scale(1)'} },
+              spin: { '0%':{transform:'rotate(0deg)'}, '100%':{transform:'rotate(360deg)'} }
+            },
+            animation: {
+              float: 'float 4.5s ease-in-out infinite',
+              swing: 'swing 3.4s ease-in-out infinite',
+              fadeUp: 'fadeUp .85s cubic-bezier(.2,.9,.3,1) forwards',
+              pulseScale: 'pulseScale 3.2s ease-in-out infinite',
+              spin: 'spin 1.2s linear infinite'
+            }
+          }
+        }
+      }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      :root{ --bg-start:#fff9f4; --bg-end:#fff5ee; }
+      body{ font-family:'Inter',system-ui,Arial; background:linear-gradient(180deg,var(--bg-start),var(--bg-end)); color:var(--coffee,#5a311f); }
+      h1,h2,h3{ font-family:'Playfair Display',serif; }
+
+      /* Preloader */
+      #preloader{ position:fixed; inset:0; background:linear-gradient(135deg,rgba(27,20,17,0.96),rgba(60,30,24,0.96)); display:flex; align-items:center; justify-content:center; z-index:70; color:white }
+      .loader-ring{ width:68px; height:68px; border-radius:999px; border:6px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; }
+      .loader-dot{ width:22px; height:22px; background:linear-gradient(90deg,#B8860B,#D4A373); border-radius:999px; animation:spin 1.2s linear infinite; }
+
+      /* Progress bar */
+      #progress{ position:fixed; top:0; left:0; height:5px; background:linear-gradient(90deg,#B8860B,#D4A373); width:0%; z-index:80 }
+
+      /* Reveal */
+      .reveal{ opacity:0; transform:translateY(16px); transition:opacity .8s ease, transform .8s ease; }
+      .reveal.in-view{ opacity:1; transform:translateY(0); }
+
+      /* Parallax container */
+      .parallax-layer{ will-change:transform; }
+
+      /* Card hover */
+      .card-hover{ transition:transform .35s cubic-bezier(.2,.9,.3,1), box-shadow .35s; }
+      .card-hover:hover{ transform:translateY(-10px); box-shadow:0 22px 48px rgba(24,12,10,0.12); }
+
+      /* Carousel */
+      .carousel{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; overflow-x:auto; display:flex; gap:1rem; }
+      .carousel > *{ scroll-snap-align:center; flex:0 0 78%; }
+
+      /* small screens */
+      @media(min-width:1024px){ .carousel > *{ flex:0 0 30%; } }
+
+      /* Accessibility focus */
+      a:focus, button:focus, input:focus{ outline:3px solid rgba(212,163,115,.18); outline-offset:3px }
+    </style>
+  </head>
+  <body class="antialiased relative overflow-x-hidden">
+
+    <!-- Progress -->
+    <div id="progress"></div>
+
+    <!-- Preloader -->
+    <div id="preloader">
+      <div class="flex flex-col items-center gap-4">
+        <div class="loader-ring"><div class="loader-dot"></div></div>
+        <div class="text-sm">Roasting beans — just a sec</div>
+      </div>
+    </div>
+
+    <!-- NAV -->
+    <nav class="fixed w-full z-50 top-5 left-0 px-6 max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="#" class="flex items-center gap-3 bg-white/60 backdrop-blur-sm px-3 py-2 rounded-2xl shadow-sm">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-coffee to-amber flex items-center justify-center text-white font-bold">B</div>
+          <div class="hidden sm:block">
+            <div class="text-sm font-semibold">Break and BreakFast</div>
+            <div class="text-xs text-coffee/70">Craft Coffee Studio</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#about" class="nav-link">About</a>
+        <a href="#menu" class="nav-link">Menu</a>
+        <a href="#shop" class="nav-link">Shop</a>
+        <a href="#process" class="nav-link">Process</a>
+        <a href="#testimonials" class="nav-link">Reviews</a>
+        <button id="ctaTop" class="ml-2 inline-flex items-center gap-2 bg-gradient-to-r from-coffee to-amber text-crema px-4 py-2 rounded-full text-sm shadow-lg">Order Online</button>
+      </div>
+
+      <div class="md:hidden flex items-center gap-3">
+        <button id="themeToggle" aria-label="Toggle theme" class="p-2 rounded-md bg-white/60 shadow-sm">☾</button>
+        <button id="menuBtn" aria-label="Open menu" class="p-2 rounded-md bg-white/60 shadow-sm">☰</button>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="fixed inset-0 z-40 hidden">
+      <div id="menuBackdrop" class="absolute inset-0 bg-black/30"></div>
+      <div class="absolute right-4 top-16 w-11/12 max-w-xs bg-white rounded-2xl p-6 shadow-xl transform translate-x-6 mobile-panel">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-lg font-semibold">Roast & Ritual</div>
+            <div class="text-xs text-coffee/70">Small-batch roastery</div>
+          </div>
+          <button id="menuClose" aria-label="Close menu" class="text-xl">✕</button>
+        </div>
+        <div class="mt-6 space-y-4">
+          <a href="#about" class="block">About</a>
+          <a href="#menu" class="block">Menu</a>
+          <a href="#shop" class="block">Shop</a>
+          <a href="#process" class="block">Process</a>
+          <a href="#testimonials" class="block">Reviews</a>
+          <button id="mobileOrder" class="w-full mt-2 py-2 bg-gradient-to-r from-coffee to-amber text-crema rounded-full">Order Online</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <header class="hero pt-28 pb-16 lg:pt-40 lg:pb-24 max-w-6xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
+      <div class="w-full lg:w-6/12 reveal" data-reveal>
+        <div class="max-w-xl">
+          <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-3">Awaken your senses — <span class="bg-clip-text text-gloden font-extrabold">one cup</span> at a time.</h1>
+          <p class="text-coffee/70 mb-6">Small-batch roasted beans, seasonal single origins and barista-crafted drinks. Energetic motion, luxury finish.</p>
+
+          <div class="flex gap-3 flex-wrap">
+            <button id="orderBtn" class="px-6 py-3 rounded-full bg-gradient-to-r from-coffee to-amber text-crema shadow-lg transform-gpu hover:scale-105 transition">Order Online</button>
+            <a href="#menu" class="px-6 py-3 rounded-full border border-coffee text-coffee hover:bg-coffee/5 transition">View Menu</a>
+          </div>
+
+          <div class="mt-8 grid grid-cols-3 gap-3 items-center text-center">
+            <div>
+              <div class="text-2xl font-bold">4.9</div>
+              <div class="text-xs text-coffee/70">Google Rating</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold">220+</div>
+              <div class="text-xs text-coffee/70">Weekly Roasts</div>
+            </div>
+            <div>
+              <div class="text-2xl font-bold">100k+</div>
+              <div class="text-xs text-coffee/70">Happy Sips</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full lg:w-6/12 flex justify-center items-center relative">
+        <!-- floating decorative shapes -->
+        <svg id="shape1" class="absolute -left-10 -top-12 w-52 h-52 parallax-layer animate-float opacity-85" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="36" ry="20" fill="#8B5E3C" /></svg>
+        <svg id="shape2" class="absolute right-6 top-8 w-28 h-28 parallax-layer animate-swing opacity-90" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="26" ry="14" fill="#7B4F39" /></svg>
+
+        <div class="relative w-full max-w-[420px] transform-gpu">
+          <svg class="hero-cup w-full h-full" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="#f3dcc7"/><stop offset="100%" stop-color="#b07a54"/></linearGradient>
+            </defs>
+            <g transform="translate(20,10)">
+              <g class="cup-shadow" opacity="0.12"><ellipse cx="100" cy="220" rx="92" ry="16" fill="#6b4f3a" /></g>
+              <g class="cup-body" transform="translate(0,20)">
+                <path d="M30 110 Q28 30 120 30 Q212 30 210 110 Q210 150 60 150 Q30 150 30 110 Z" fill="url(#g1)" stroke="#6b3f2f" stroke-width="2"/>
+                <path d="M210 75 Q235 80 235 115 Q235 150 210 160" fill="none" stroke="#6b3f2f" stroke-width="3" opacity="0.9"/>
+                <ellipse cx="120" cy="70" rx="60" ry="18" fill="#43261c" />
+                <g class="steam" fill="none" stroke="#fff" stroke-opacity="0.92" stroke-width="2">
+                  <path d="M95 40 C90 10, 110 10, 105 -20" stroke-linecap="round" class="steam-anim"/>
+                  <path d="M135 40 C130 8, 150 8, 145 -22" stroke-linecap="round" class="steam-anim" style="animation-delay:.12s"/>
+                  <path d="M115 44 C112 20, 125 22, 122 -6" stroke-linecap="round" class="steam-anim" style="animation-delay:.24s"/>
+                </g>
+              </g>
+            </g>
+          </svg>
+
+          <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/95 px-3 py-2 rounded-full shadow-md text-xs flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v3" stroke="#5a311f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Single Origin — Break and BreakFast
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ABOUT + FEATURES -->
+    <section id="about" class="py-16 mt-6">
+      <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div class="reveal" data-reveal>
+          <h2 class="text-3xl font-bold mb-3">Our Story</h2>
+          <p class="text-coffee/70 mb-4">We roast small batches with care—direct trade, transparency, and a focus on tasting clarity. Every bean tells a story.</p>
+          <ul class="space-y-3 text-coffee/80">
+            <li>• Direct trade relationships</li>
+            <li>• Light & medium roast profiles</li>
+            <li>• Seasonal single-origin drops</li>
+          </ul>
+        </div>
+
+        <div class="reveal grid grid-cols-2 gap-4" data-reveal>
+          <div class="rounded-2xl overflow-hidden card-hover shadow-md">
+            <img src="https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=800&auto=format&fit=crop" alt="barista" class="w-full h-44 object-cover">
+          </div>
+          <div class="rounded-2xl overflow-hidden card-hover shadow-md">
+            <img src="https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=800&auto=format&fit=crop" alt="beans" class="w-full h-44 object-cover">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENU (cards improved) -->
+    <section id="menu" class="py-16 max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-bold mb-6 reveal" data-reveal>Menu Highlights</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Card -->
+        <article class="reveal card-hover rounded-2xl p-6 bg-white shadow" data-reveal>
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-lg">Signature Latte</h3>
+              <div class="text-xs text-coffee/70">Velvety steamed milk, house espresso</div>
+            </div>
+            <div class="text-sm font-bold">₹520</div>
+          </div>
+          <p class="text-sm text-coffee/70 mb-4">Caramel crema & silky microfoam.</p>
+          <div class="flex gap-3">
+            <button class="px-4 py-2 rounded-full border border-coffee text-coffee">Order</button>
+            <button class="px-4 py-2 rounded-full bg-gradient-to-r from-coffee to-amber text-crema">Add</button>
+          </div>
+        </article>
+
+        <article class="reveal card-hover rounded-2xl p-6 bg-white shadow" data-reveal>
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-lg">Pour Over</h3>
+              <div class="text-xs text-coffee/70">Single-origin, brewed to tasting notes</div>
+            </div>
+            <div class="text-sm font-bold">₹660</div>
+          </div>
+          <p class="text-sm text-coffee/70 mb-4">Delicate clarity & bright finish.</p>
+          <div class="flex gap-3">
+            <button class="px-4 py-2 rounded-full border border-coffee text-coffee">Order</button>
+            <button class="px-4 py-2 rounded-full bg-gradient-to-r from-coffee to-amber text-crema">Add</button>
+          </div>
+        </article>
+
+        <article class="reveal card-hover rounded-2xl p-6 bg-white shadow" data-reveal>
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-lg">Cold Brew</h3>
+              <div class="text-xs text-coffee/70">Slow-steeped, chocolatey</div>
+            </div>
+            <div class="text-sm font-bold">₹680</div>
+          </div>
+          <p class="text-sm text-coffee/70 mb-4">Smooth & refreshing.</p>
+          <div class="flex gap-3">
+            <button class="px-4 py-2 rounded-full border border-coffee text-coffee">Order</button>
+            <button class="px-4 py-2 rounded-full bg-gradient-to-r from-coffee to-amber text-crema">Add</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- FEATURED PRODUCTS (carousel) -->
+    <section id="shop" class="py-16 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-crema to-white">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-3xl font-bold reveal" data-reveal>Featured Beans</h2>
+          <a href="#" class="text-sm text-coffee/70">View all</a>
+        </div>
+
+        <div class="carousel py-4" id="productCarousel">
+          <div class="bg-white rounded-2xl p-4 shadow card-hover">
+            <img class="w-full h-40 object-cover rounded-xl mb-3" src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=1200&auto=format&fit=crop" alt="Ethiopia">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-semibold">Ethiopia - Sidamo</div>
+                <div class="text-xs text-coffee/70">250g • Medium</div>
+              </div>
+              <div class="text-sm font-bold">₹699</div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 shadow card-hover">
+            <img class="w-full h-40 object-cover rounded-xl mb-3" src="https://images.unsplash.com/photo-1470337458703-46ad1756a187?q=80&w=1200&auto=format&fit=crop" alt="Colombia">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-semibold">Colombia - Huila</div>
+                <div class="text-xs text-coffee/70">250g • Medium-Dark</div>
+              </div>
+              <div class="text-sm font-bold">₹749</div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 shadow card-hover">
+            <img class="w-full h-40 object-cover rounded-xl mb-3" src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=1200&auto=format&fit=crop" alt="House Blend">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-semibold">House Blend</div>
+                <div class="text-xs text-coffee/70">250g • Balanced</div>
+              </div>
+              <div class="text-sm font-bold">₹599</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESS TIMELINE -->
+    <section id="process" class="py-16 max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-bold mb-6 reveal" data-reveal>Our Process</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+        <div class="reveal p-6 bg-white rounded-2xl shadow card-hover" data-reveal>
+          <div class="text-2xl font-bold">01</div>
+          <div class="mt-3 font-semibold">Sourcing</div>
+          <p class="text-sm text-coffee/70 mt-2">Direct trade & farms we trust.</p>
+        </div>
+        <div class="reveal p-6 bg-white rounded-2xl shadow card-hover" data-reveal>
+          <div class="text-2xl font-bold">02</div>
+          <div class="mt-3 font-semibold">Roasting</div>
+          <p class="text-sm text-coffee/70 mt-2">Small-batch roast profiles.</p>
+        </div>
+        <div class="reveal p-6 bg-white rounded-2xl shadow card-hover" data-reveal>
+          <div class="text-2xl font-bold">03</div>
+          <div class="mt-3 font-semibold">Grinding</div>
+          <p class="text-sm text-coffee/70 mt-2">Precision for brewing style.</p>
+        </div>
+        <div class="reveal p-6 bg-white rounded-2xl shadow card-hover" data-reveal>
+          <div class="text-2xl font-bold">04</div>
+          <div class="mt-3 font-semibold">Serving</div>
+          <p class="text-sm text-coffee/70 mt-2">Barista craft & care.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" class="py-16 bg-white/60">
+      <div class="max-w-6xl mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-6 reveal" data-reveal>What people say</h2>
+        <div class="relative">
+          <div id="testCarousel" class="carousel">
+            <div class="p-6 bg-white rounded-2xl shadow card-hover">
+              <div class="quote">“Best pour over in the city — bright, clean and beautifully balanced.”</div>
+              <div class="mt-4 font-semibold">— Bittu Tripathi.</div>
+            </div>
+            <div class="p-6 bg-white rounded-2xl shadow card-hover">
+              <div class="quote">“Cozy space, excellent service and incredible beans. My daily stop!”</div>
+              <div class="mt-4 font-semibold">— B With Code.</div>
+            </div>
+            <div class="p-6 bg-white rounded-2xl shadow card-hover">
+              <div class="quote">“Ordered beans online — arrived fast and tasted superb.”</div>
+              <div class="mt-4 font-semibold">— Shivam.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISIT / CONTACT -->
+    <section id="visit" class="py-16 max-w-6xl mx-auto px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <div class="reveal" data-reveal>
+          <h2 class="text-3xl font-bold mb-3">Visit Us</h2>
+          <p class="text-coffee/70 mb-4">A cozy corner in the city. Free Wi-Fi, natural light, and curated pastries.</p>
+          <div class="space-y-2 text-coffee/80">
+            <div>📍 Near kanpur City</div>
+            <div>⏰ Mon - Sun: 9:30 AM — 12:00 PM</div>
+            <div>📞 +91 7523069445</div>
+          </div>
+        </div>
+
+        <form class="reveal bg-white rounded-2xl p-6 shadow" onsubmit="return false" data-reveal>
+          <h3 class="font-semibold mb-3">Say Hello</h3>
+          <div class="grid grid-cols-1 gap-3">
+            <input id="name" class="border p-3 rounded-md" placeholder="Your name" required />
+            <input id="email" class="border p-3 rounded-md" placeholder="Email" required />
+            <textarea id="message" class="border p-3 rounded-md" rows="3" placeholder="Message"></textarea>
+            <div class="flex items-center gap-3">
+              <button id="sendBtn" class="px-4 py-2 rounded-full bg-gradient-to-r from-coffee to-amber text-crema">Send</button>
+              <div id="sendStatus" class="text-sm text-coffee/70"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-10 mt-12">
+      <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-coffee/80">© <span id="year"></span> Roast & Ritual — All rights reserved.</div>
+        <div class="flex items-center gap-4">
+          <a href="#" class="text-sm">Privacy</a>
+          <a href="#" class="text-sm">Terms</a>
+          <a href="#" class="text-sm">Instagram</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Sticky CTA mobile -->
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden">
+      <button id="stickyOrder" class="px-6 py-3 rounded-full bg-gradient-to-r from-coffee to-amber text-crema shadow-xl">Order Now</button>
+    </div>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="fixed inset-0 hidden z-50 items-center justify-center">
+      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="relative w-11/12 max-w-md bg-white rounded-2xl p-6 shadow-xl">
+        <h3 class="font-semibold mb-3">Start an order</h3>
+        <p class="text-sm text-coffee/70 mb-4">Choose items and proceed to checkout (demo).</p>
+        <div class="space-y-3">
+          <select class="w-full p-3 border rounded-md">
+            <option>Signature Latte — ₹220</option>
+            <option>Pour Over — ₹260</option>
+            <option>Cold Brew — ₹180</option>
+            <option> Burger — ₹220</option>
+            <option>Pizza — ₹960</option>
+            <option>Cold Coffee — ₹280</option>
+          </select>
+
+          <div class="flex items-center gap-3">
+            <button id="modalClose" class="px-4 py-2 rounded-full border">Close</button>
+            <button id="modalBuy" class="px-4 py-2 rounded-full bg-gradient-to-r from-coffee to-amber text-crema">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM
+      const preloader = document.getElementById('preloader');
+      const progress = document.getElementById('progress');
+      const reveals = document.querySelectorAll('[data-reveal]');
+
+      // Preloader hide
+      window.addEventListener('load', ()=>{
+        setTimeout(()=>{ preloader.style.opacity = 0; preloader.style.pointerEvents = 'none'; preloader.remove(); }, 600);
+      });
+
+      // Scroll progress
+      window.addEventListener('scroll', ()=>{
+        const h = document.documentElement.scrollHeight - window.innerHeight;
+        const scrolled = (window.scrollY / h) * 100;
+        progress.style.width = scrolled + '%';
+
+        // parallax small shapes
+        document.querySelectorAll('.parallax-layer').forEach((el,i)=>{ el.style.transform = `translateY(${window.scrollY * (0.02 * (i+1))}px)` });
+      });
+
+      // Reveal observer with delays
+      const obs = new IntersectionObserver((entries)=>{
+        entries.forEach(ent=>{
+          if(ent.isIntersecting){
+            const delay = ent.target.dataset.revealDelay ? Number(ent.target.dataset.revealDelay) : 0;
+            setTimeout(()=> ent.target.classList.add('in-view'), delay);
+          }
+        })
+      }, { threshold: 0.15 });
+      reveals.forEach(r=> obs.observe(r));
+
+      // Mobile menu
+      const menuBtn = document.getElementById('menuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const menuClose = document.getElementById('menuClose');
+      const menuBackdrop = document.getElementById('menuBackdrop');
+      menuBtn?.addEventListener('click', ()=> mobileMenu.classList.remove('hidden'));
+      menuClose?.addEventListener('click', ()=> mobileMenu.classList.add('hidden'));
+      menuBackdrop?.addEventListener('click', ()=> mobileMenu.classList.add('hidden'));
+
+      // Modal & CTAs
+      const orderModal = document.getElementById('orderModal');
+      document.querySelectorAll('#orderBtn, #ctaTop, #mobileOrder, #stickyOrder, #ctaTop').forEach(el=> el?.addEventListener('click', ()=> orderModal.classList.remove('hidden')));
+      document.getElementById('modalClose')?.addEventListener('click', ()=> orderModal.classList.add('hidden'));
+
+      // Smooth scroll for nav
+      document.querySelectorAll('a[href^="#"]').forEach(a=>{
+        a.addEventListener('click', (e)=>{
+          const target = document.querySelector(a.getAttribute('href'));
+          if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth', block:'start'}) }
+        })
+      });
+
+      // Send button demo
+      document.getElementById('sendBtn')?.addEventListener('click', ()=>{
+        const status = document.getElementById('sendStatus');
+        status.textContent = 'Message sent — we\'ll reply soon!';
+        setTimeout(()=> status.textContent = '', 3500);
+      });
+
+      // Testimonials simple drag scroll for carousel
+      const testCarousel = document.getElementById('testCarousel');
+      let isDown = false, startX, scrollLeft;
+      if(testCarousel){
+        testCarousel.addEventListener('mousedown', (e)=>{ isDown=true; startX=e.pageX - testCarousel.offsetLeft; scrollLeft = testCarousel.scrollLeft; testCarousel.classList.add('active'); });
+        testCarousel.addEventListener('mouseleave', ()=>{ isDown=false; testCarousel.classList.remove('active'); });
+        testCarousel.addEventListener('mouseup', ()=>{ isDown=false; testCarousel.classList.remove('active'); });
+        testCarousel.addEventListener('mousemove', (e)=>{ if(!isDown) return; e.preventDefault(); const x = e.pageX - testCarousel.offsetLeft; const walk = (x - startX) * 1.2; testCarousel.scrollLeft = scrollLeft - walk; });
+      }
+
+      // Product carousel touch snap (small) — keyboard nav
+      const productCarousel = document.getElementById('productCarousel');
+      let prodIndex = 0;
+      if(productCarousel){
+        productCarousel.addEventListener('wheel', (e)=>{ if(e.deltaY>0) productCarousel.scrollBy({left:300, behavior:'smooth'}); else productCarousel.scrollBy({left:-300, behavior:'smooth'}); });
+      }
+
+      // simple steam animation (energy)
+      document.querySelectorAll('.steam-anim').forEach((p,i)=>{ p.style.transition='transform 1.2s ease-in-out'; setInterval(()=>{ p.style.transform = `translateY(${(i%2? -8 : -12)}px) scale(${1.01 + (i*0.004)})`; setTimeout(()=> p.style.transform='translateY(0) scale(1)', 1200); }, 1500 + i*200); });
+
+      // Escape to close
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ orderModal.classList.add('hidden'); mobileMenu.classList.add('hidden'); } });
+
+      // Footer year
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      // Theme toggle (dual) — gradient luxury stays but allows dark overlay
+      const themeToggle = document.getElementById('themeToggle'); let dark=false;
+      themeToggle?.addEventListener('click', ()=>{ dark = !dark; if(dark) document.documentElement.style.setProperty('--bg-start','#0f0c0b'), document.documentElement.style.setProperty('--bg-end','#171213'); else document.documentElement.style.setProperty('--bg-start','#fff9f4'), document.documentElement.style.setProperty('--bg-end','#fff5ee'); themeToggle.textContent = dark? '☀' : '☾'; });
+
+    </script>
+  </body>
+  </html>
+  
